@@ -13,37 +13,39 @@
             --success: #00e676; 
             --checked: #4caf50;
             --unchecked: #333333;
-            --accent: #2196f3; /* สีปุ่มดูรูป */
+            --accent: #2196f3; 
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 15px 10px; /* ลดขอบซ้ายขวาลงให้มีพื้นที่มากขึ้น */
             padding-bottom: 50px;
         }
-        h1 { text-align: center; font-size: 24px; margin-bottom: 5px; }
+        h1 { text-align: center; font-size: 24px; margin-bottom: 5px; margin-top: 10px;}
         p.subtitle { text-align: center; color: var(--text-sub); font-size: 14px; margin-top: 0; margin-bottom: 25px; }
 
-        /* --- ส่วนของปุ่มดูรูป (Floating Button) --- */
+        /* --- ปรับปุ่มดูรูปให้เป็นวงกลมเล็กๆ มุมขวาบน --- */
         .img-btn {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             z-index: 100;
             background-color: var(--accent);
             color: white;
             border: none;
-            border-radius: 50px;
-            padding: 10px 15px;
-            font-weight: bold;
+            border-radius: 50%; /* ทำให้เป็นวงกลม */
+            width: 45px; /* กำหนดขนาดความกว้าง */
+            height: 45px; /* กำหนดขนาดความสูง */
+            font-size: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             cursor: pointer;
-            font-size: 14px;
         }
 
-        /* --- ส่วนของหน้าต่างแสดงรูป (Modal Overlay) --- */
         .modal {
             display: none;
             position: fixed;
@@ -56,7 +58,7 @@
             flex-direction: column;
         }
         .modal img {
-            max-width: 90%;
+            max-width: 95%;
             max-height: 80%;
             border-radius: 8px;
             box-shadow: 0 0 20px rgba(255,255,255,0.1);
@@ -72,11 +74,10 @@
             cursor: pointer;
         }
 
-        /* --- สไตล์ Tracker เดิม --- */
         .week-card {
             background-color: var(--card-bg);
             border-radius: 12px;
-            padding: 15px;
+            padding: 12px; /* ลด padding ข้างในกล่องลง */
             margin-bottom: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             transition: border 0.3s ease;
@@ -84,32 +85,38 @@
         }
         .week-card.completed { border-color: var(--success); }
         .week-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: bold; }
-        .week-title { font-size: 18px; }
-        .week-status { font-size: 14px; color: var(--text-sub); background: #2a2a2a; padding: 4px 10px; border-radius: 20px; }
+        .week-title { font-size: 16px; }
+        .week-status { font-size: 13px; color: var(--text-sub); background: #2a2a2a; padding: 4px 8px; border-radius: 20px; }
         .week-card.completed .week-status { background: rgba(0, 230, 118, 0.2); color: var(--success); }
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        
+        /* --- แก้ปัญหากล่องวันเบียดทะลุจอ --- */
+        .days-grid { 
+            display: grid; 
+            grid-template-columns: repeat(7, minmax(0, 1fr)); /* บังคับให้อยู่ในกรอบเสมอ */
+            gap: 5px; /* ลดระยะห่างระหว่างปุ่มลง */
+        }
         .day-btn {
             background-color: var(--unchecked);
             color: var(--text-sub);
             border: none;
             border-radius: 8px;
-            padding: 10px 0;
-            font-size: 14px;
+            padding: 0; /* เอา padding ออกเพื่อลดพื้นที่ */
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             aspect-ratio: 1 / 1;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .day-btn.active { background-color: var(--checked); color: white; transform: scale(1.05); }
-        .day-name { font-size: 12px; margin-bottom: 2px; }
+        .day-name { font-size: 11px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
 
-    <button class="img-btn" onclick="openModal()">📋 ดูตารางท่าเล่น</button>
+    <button class="img-btn" onclick="openModal()">📋</button>
 
     <div id="imageModal" class="modal">
-        <img src="workout-schedule.png" alt="ตารางออกกำลังกาย">
+        <img src="workout-schedule.jpg" alt="ตารางออกกำลังกาย">
         <button class="close-modal" onclick="closeModal()">ปิดหน้าต่าง</button>
     </div>
 
@@ -126,7 +133,6 @@
         let workoutData = JSON.parse(localStorage.getItem('workoutData')) || 
                           Array(totalWeeks).fill().map(() => Array(7).fill(false));
 
-        // ฟังก์ชันเปิด-ปิดรูป
         function openModal() { document.getElementById('imageModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
 
