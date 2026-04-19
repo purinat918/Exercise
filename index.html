@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3-Month Workout Tracker</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --text-sub: #b3b3b3;
+            --success: #00e676; 
+            --checked: #4caf50;
+            --unchecked: #333333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 50px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            text-align: center;
+            color: var(--text-sub);
+            font-size: 14px;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+        .week-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: border 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .week-card.completed {
+            border-color: var(--success);
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+        }
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+        .week-title {
+            font-size: 18px;
+        }
+        .week-status {
+            font-size: 14px;
+            color: var(--text-sub);
+            background: #2a2a2a;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .week-card.completed .week-status {
+            background: rgba(0, 230, 118, 0.2);
+            color: var(--success);
+        }
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .day-btn {
+            background-color: var(--unchecked);
+            color: var(--text-sub);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 0;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .day-btn.active {
+            background-color: var(--checked);
+            color: white;
+            transform: scale(1.05);
+        }
+        .day-name {
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>💪 3-Month Transformation</h1>
+    <p class="subtitle">สะสมความสม่ำเสมอให้ครบ 12 สัปดาห์</p>
+
+    <div id="tracker-container"></div>
+
+    <script>
+        const totalWeeks = 12;
+        const dayNames = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'];
+        const targetDays = 5;
+
+        let workoutData = JSON.parse(localStorage.getItem('workoutData')) || 
+                          Array(totalWeeks).fill().map(() => Array(7).fill(false));
+
+        function toggleDay(weekIdx, dayIdx) {
+            const isCurrentlyDone = workoutData[weekIdx][dayIdx];
+            let confirmMessage = "";
+
+            // ตั้งข้อความถามตามสถานะปัจจุบัน
+            if (!isCurrentlyDone) {
+                confirmMessage = `สุดยอด! วันนี้ออกกำลังกายเสร็จเรียบร้อยแล้วใช่ไหม?`;
+            } else {
+                confirmMessage = `คุณแน่ใจนะว่าจะเอาเครื่องหมาย "ออกกำลังกาย" ของวันนี้ออก? (เผื่อกดพลาด)`;
+            }
+
+            // แสดง Pop-up ยืนยัน
+            if (window.confirm(confirmMessage)) {
+                workoutData[weekIdx][dayIdx] = !isCurrentlyDone;
+                localStorage.setItem('workoutData', JSON.stringify(workoutData));
+                render();
+            }
+        }
+
+        function render() {
+            const container = document.getElementById('tracker-container');
+            container.innerHTML = '';
+
+            workoutData.forEach((week, weekIdx) => {
+                const completedDays = week.filter(day => day).length;
+                const isWeekCompleted = completedDays >= targetDays;
+
+                const card = document.createElement('div');
+                card.className = `week-card ${isWeekCompleted ? 'completed' : ''}`;
+
+                let headerHTML = `
+                    <div class="week-header">
+                        <div class="week-title">สัปดาห์ที่ ${weekIdx + 1}</div>
+                        <div class="week-status">${completedDays} / ${targetDays} วัน ${isWeekCompleted ? '🔥' : ''}</div>
+                    </div>
+                    <div class="days-grid">
+                `;
+
+                week.forEach((isDone, dayIdx) => {
+                    headerHTML += `
+                        <button class="day-btn ${isDone ? 'active' : ''}" onclick="toggleDay(${weekIdx}, ${dayIdx})">
+                            <span class="day-name">${dayNames[dayIdx]}</span>
+                            <span>${isDone ? '✓' : ''}</span>
+                        </button>
+                    `;
+                });
+
+                headerHTML += `</div>`;
+                card.innerHTML = headerHTML;
+                container.appendChild(card);
+            });
+        }
+
+        render();
+    </script>
+
+</body>
+</html>
