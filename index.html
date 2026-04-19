@@ -13,6 +13,7 @@
             --success: #00e676; 
             --checked: #4caf50;
             --unchecked: #333333;
+            --accent: #2196f3; /* สีปุ่มดูรูป */
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -22,18 +23,56 @@
             padding: 20px;
             padding-bottom: 50px;
         }
-        h1 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        p.subtitle {
-            text-align: center;
-            color: var(--text-sub);
+        h1 { text-align: center; font-size: 24px; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: var(--text-sub); font-size: 14px; margin-top: 0; margin-bottom: 25px; }
+
+        /* --- ส่วนของปุ่มดูรูป (Floating Button) --- */
+        .img-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 15px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            cursor: pointer;
             font-size: 14px;
-            margin-top: 0;
-            margin-bottom: 25px;
         }
+
+        /* --- ส่วนของหน้าต่างแสดงรูป (Modal Overlay) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .modal img {
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        .close-modal {
+            margin-top: 20px;
+            background: white;
+            color: black;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* --- สไตล์ Tracker เดิม --- */
         .week-card {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -43,36 +82,12 @@
             transition: border 0.3s ease;
             border: 2px solid transparent;
         }
-        .week-card.completed {
-            border-color: var(--success);
-            box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
-        }
-        .week-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            font-weight: bold;
-        }
-        .week-title {
-            font-size: 18px;
-        }
-        .week-status {
-            font-size: 14px;
-            color: var(--text-sub);
-            background: #2a2a2a;
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
-        .week-card.completed .week-status {
-            background: rgba(0, 230, 118, 0.2);
-            color: var(--success);
-        }
-        .days-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-        }
+        .week-card.completed { border-color: var(--success); }
+        .week-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: bold; }
+        .week-title { font-size: 18px; }
+        .week-status { font-size: 14px; color: var(--text-sub); background: #2a2a2a; padding: 4px 10px; border-radius: 20px; }
+        .week-card.completed .week-status { background: rgba(0, 230, 118, 0.2); color: var(--success); }
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
         .day-btn {
             background-color: var(--unchecked);
             color: var(--text-sub);
@@ -82,25 +97,21 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s ease;
             aspect-ratio: 1 / 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .day-btn.active {
-            background-color: var(--checked);
-            color: white;
-            transform: scale(1.05);
-        }
-        .day-name {
-            font-size: 12px;
-            margin-bottom: 2px;
-        }
+        .day-btn.active { background-color: var(--checked); color: white; transform: scale(1.05); }
+        .day-name { font-size: 12px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
+
+    <button class="img-btn" onclick="openModal()">📋 ดูตารางท่าเล่น</button>
+
+    <div id="imageModal" class="modal">
+        <img src="workout-schedule.png" alt="ตารางออกกำลังกาย">
+        <button class="close-modal" onclick="closeModal()">ปิดหน้าต่าง</button>
+    </div>
 
     <h1>💪 3-Month Transformation</h1>
     <p class="subtitle">สะสมความสม่ำเสมอให้ครบ 12 สัปดาห์</p>
@@ -115,18 +126,16 @@
         let workoutData = JSON.parse(localStorage.getItem('workoutData')) || 
                           Array(totalWeeks).fill().map(() => Array(7).fill(false));
 
+        // ฟังก์ชันเปิด-ปิดรูป
+        function openModal() { document.getElementById('imageModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
+
         function toggleDay(weekIdx, dayIdx) {
             const isCurrentlyDone = workoutData[weekIdx][dayIdx];
-            let confirmMessage = "";
+            let confirmMessage = !isCurrentlyDone ? 
+                `สุดยอด! วันนี้ออกกำลังกายเสร็จเรียบร้อยแล้วใช่ไหม?` : 
+                `คุณแน่ใจนะว่าจะเอาเครื่องหมาย "ออกกำลังกาย" ของวันนี้ออก? (เผื่อกดพลาด)`;
 
-            // ตั้งข้อความถามตามสถานะปัจจุบัน
-            if (!isCurrentlyDone) {
-                confirmMessage = `สุดยอด! วันนี้ออกกำลังกายเสร็จเรียบร้อยแล้วใช่ไหม?`;
-            } else {
-                confirmMessage = `คุณแน่ใจนะว่าจะเอาเครื่องหมาย "ออกกำลังกาย" ของวันนี้ออก? (เผื่อกดพลาด)`;
-            }
-
-            // แสดง Pop-up ยืนยัน
             if (window.confirm(confirmMessage)) {
                 workoutData[weekIdx][dayIdx] = !isCurrentlyDone;
                 localStorage.setItem('workoutData', JSON.stringify(workoutData));
@@ -137,14 +146,11 @@
         function render() {
             const container = document.getElementById('tracker-container');
             container.innerHTML = '';
-
             workoutData.forEach((week, weekIdx) => {
                 const completedDays = week.filter(day => day).length;
                 const isWeekCompleted = completedDays >= targetDays;
-
                 const card = document.createElement('div');
                 card.className = `week-card ${isWeekCompleted ? 'completed' : ''}`;
-
                 let headerHTML = `
                     <div class="week-header">
                         <div class="week-title">สัปดาห์ที่ ${weekIdx + 1}</div>
@@ -152,7 +158,6 @@
                     </div>
                     <div class="days-grid">
                 `;
-
                 week.forEach((isDone, dayIdx) => {
                     headerHTML += `
                         <button class="day-btn ${isDone ? 'active' : ''}" onclick="toggleDay(${weekIdx}, ${dayIdx})">
@@ -161,15 +166,12 @@
                         </button>
                     `;
                 });
-
                 headerHTML += `</div>`;
                 card.innerHTML = headerHTML;
                 container.appendChild(card);
             });
         }
-
         render();
     </script>
-
 </body>
 </html>
